@@ -1,0 +1,11 @@
+# My Gforth library
+
+One of my New Year's goals for 2023 was to "really learn Forth".  To accomplish this, I've told .bashrc (a sort of auto-start file for Linux) to run Gforth every time I open a terminal.  I've done this with other languages in the past (Breakaway BASIC, for example) and it always helped me learn not only how to use the language but also what I needed to work on to use it more effectively.  So I figured, why not do it with Forth? :)
+
+This has led to a constantly-growing glossary of Forth words, for doing everything from ASCII art to emojis to text-to-speech and probably a lot more.  Eventually, I want to get good enough at Forth to build games and other stuff with it.  But until then, just learning how to use Gforth is getting me there faster than you can say Geek on Skates. :)
+
+A couple notes here:
+
+* One thing I'm quickly learning is that not all Forths are the same.  It's kind of like BASICs; C64 BASIC is not the same as TI BASIC, AppleSoft BASIC, or Visual Basic.NET - they're all very different despite all being "Basics".  Back to Forth, C64 Forth doesn't have the `.\"` word, but what it does have is stuff that makes more sense on a C64 - words like "border" and "csave" (to save to cassette).  That's an extreme example, but you get the idea - every Forth seems to be its own thing, with its own set of words etc.  So for example, while most of my ASCII art stuff should work on other forths (Pforth, NovaForth, etc.) some of the other words I've defined might not.
+* Also, some of the words I've defined may have external dependencies; for example, for the "say" word, I used the "Voxin" text-to-speech engine (instead of the much-more-common "espeak" TTS).  Same goes for the "play" word (which uses "sox").  So not all words will work even if you're using Gforth.
+* This is my personal library - idk what kind of license I'd put on this, but it's all words I've created for myself.  I'm open-sourcing it because I believe in freed software and because what helped me learn might help you.  But until I figure out the right license, just keep this in mind.  In non-lawyer's English, what I want is simple: "Do whatever you want with my code, but I am not responsible (legally or otherwise) for your actions with it.  If you build something with it, recognition / attribution / whatever is appreciated but not necessary."
