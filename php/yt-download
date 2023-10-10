@@ -1,0 +1,50 @@
+#!/usr/bin/env php
+<?php
+
+// ======================================================================
+// YT-DOWNLOAD - an easier-to-use wrapper around youtube-dl :-)
+// ======================================================================
+
+// Clear the screen and turn reverse mode on
+printf("\033c\033[7m");
+
+// Print the title of this little app
+printf("                              YouTube Downloader                              ");
+
+// Turn reverse mode off and move down a couple lines
+printf("\033[0m\n\n");
+
+// Get the download URL
+$url = readline("    Enter link:  ");
+
+// Make sure it's a URL
+if ($url === "") {
+	printf("Link can't be blank/empty.  Exiting.\n\n");
+	exit();
+}
+if (!preg_match("~^https?:\/\/~", $url)) {
+	printf("That's not a link, you geek.  Bye. :-)\n\n");
+	exit();
+}
+
+// Get the format
+$format = strtolower(readline("    MP3 or MP4?  "));
+
+// If the user wants MP3, download the audio
+printf("\n");
+if ($format == "mp3" || $format == "3") {
+	printf("Downloading mp3 audio...\n");
+	exec("youtube-dl -x --audio-format mp3 $url");
+}
+
+// If the user wants MP3, download the video
+else if ($format == "mp4" || $format == "4") {
+	printf("Downloading mp4 video...\n");
+	exec("youtube-dl -f exit'bestvideo[ext=mp4]+bestaudio[ext=m4a]/mp4' $url");
+}
+
+// If it's neither, show an error.
+else printf("Sorry, I don't know what \"%s\" means.\n\n", $format);
+
+// The download can take awhile, so let me know when it's done.
+printf("Done.\n\n");

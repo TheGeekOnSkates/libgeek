@@ -1,0 +1,136 @@
+#!/usr/bin/env php
+<?php
+
+// ======================================================================
+// SABRES - Tells me if there's a Sabres game tonight
+// ======================================================================
+
+// This is the Sabres' 2023-24 schedule; it just said New York,
+// so I may have gotten my Rangers/Islanders wrong in places.
+$schedule = array(
+	"20231012" => "vs. NY Rangers at 7:00 PM",
+	"20231014" => "@ NY Islanders at 7:30 PM",
+	"20231017" => "vs. Tampa at 7:00 PM",
+	"20231019" => "vs. Calgary at 7:00 PM",
+	"20231021" => "vs. NY Islanders at 7:00 PM",
+	"20231023" => "vs. Montreal at 7:00 PM",
+	"20231024" => "@ Ottawa at 6:45 PM",
+	"20231027" => "@ New Jersey at 7:00 PM",
+	"20231029" => "vs. Colorado at 1:00 PM",
+	"20231101" => "@ Philadelphia at 7:00 PM",
+	"20231103" => "vs Philadelphia at 7:00 PM",
+	"20231104" => "@ Toronto at 7:00 PM",
+	"20231107" => "@ Carolina at 7:00 PM",
+	"20231110" => "vs. Minnesota at 7:00 PM",
+	"20231111" => "@ Pittsburgh at 7:00 PM",
+	"20231114" => "vs. Boston at 7:00 PM",
+	"20231117" => "@ Winnipeg at 8:00 PM",
+	"20231119" => "@ Chicago at 7:00 PM",
+	"20231122" => "@ Washington at 7:00 PM",
+	"20231124" => "vs. Pittsburgh at 6:00 PM",
+	"20231125" => "@ New Jersey at 7:00 PM",
+	"20231127" => "@ NY Rangers at 7:00 PM",
+	"20231130" => "@ St. Louis at 7:00 PM",
+	"20231202" => "@ Carolina at 7:00 PM",
+	"20231203" => "vs. Nashville at 7:00 PM",
+	"20231205" => "vs. Detroit at 7:30 PM",
+	"20231207" => "@ Boston at 7:00 PM",
+	"20231209" => "vs. Montreal at 7:00 PM",
+	"20231211" => "vs. Arizona at 7:00 PM",
+	"20231213" => "@ Colorado at 9:30 PM",
+	"20231215" => "@ Vegas at 10:00 PM",
+	"20231216" => "@ Arizona at 9:00 PM",
+	"20231219" => "vs. Columbus at 7:00 PM",
+	"20231221" => "vs. Toronto at 7:00 PM",
+	"20231223" => "@ NY Rangers at 7:30 PM",
+	"20231227" => "vs. Boston at 7:30 PM",
+	"20231230" => "vs. Columbus at 5:00 PM",
+	"20231231" => "@ Ottawa at 6:00 PM",
+	"20240104" => "@ Montreal at 7:00 PM",
+	"20240106" => "@ Pittsburgh at 7:00 PM",
+	"20240109" => "vs. Seattle at 7:00 PM",
+	"20240111" => "vs. Ottawa at 7:00 PM",
+	"20240113" => "vs. Vancouver at 4:00 PM",
+	"20240115" => "vs. San Jose at 1:00 PM",
+	"20240117" => "vs. Chicago at 7:30 PM",
+	"20240120" => "vs. Tampa Bay at 12:30 PM",
+	"20240123" => "@ Anaheim at 10:00 PM",
+	"20240124" => "@ Los Angeles at 10:30 PM",
+	"20240127" => "@ San Jose at 4:00 PM",
+	"20240206" => "vs. Dallas at 7:00 PM",
+	"20240210" => "vs. St. Louis at 1:00 PM",
+	"20240213" => "vs. Los Angeles at 7:00 PM",
+	"20240215" => "vs. Florida at 7:00 PM",
+	"20240217" => "@ Minnesota at 5:00 PM",
+	"20230219" => "vs. Anaheim at 12:30 PM",
+	"20240221" => "@ Montreal at 7:00 PM",
+	"20240223" => "@ Columbus at 7:00 PM",
+	"20240225" => "vs. Carolina at 6:00 PM",
+	"20240227" => "@ Florida at 7:00 PM",
+	"20240229" => "@ Tampa Bay at 7:00 PM",
+	"20240302" => "vs. Vegas at 7:00 PM",
+	"20240303" => "vs. Winnipeg at 7:00 PM",
+	"20240306" => "@ Toronto at 7:00 PM",
+	"20240307" => "@ Nashville at 8:00 PM",
+	"20240309" => "vs. Edmonton at 12:30 PM",
+	"20240312" => "vs. Detroit at 7:00 PM",
+	"20240314" => "vs. New York at 7:30 PM",
+	"20240316" => "@ Detroit at 12:30 PM",
+	"20240318" => "@ Seattle at 10:00 PM",
+	"20240319" => "@ Vancouver at 10:00 PM",
+	"20240321" => "@ Edmonton at 9:00 PM",
+	"20240324" => "@ Calgary at 9:00 PM",
+	"20240327" => "vs. Ottawa at 7:00 PM",
+	"20240329" => "vs. New Jersey at 7:00 PM",
+	"20240330" => "vs. Toronto at 7:00 PM",
+	"20240402" => "vs. Washington at 7:00 PM",
+	"20240405" => "vs. Philadelphia at 7:00 PM",
+	"20240407" => "@ Detroit at 1:00 PM",
+	"20240409" => "@ Dallas at 8:00 PM",
+	"20240411" => "vs. Washington at 7:00 PM",
+	"20240413" => "@ Florida at 5:00 PM",
+	"20240415" => "@ Tampa Bay at 7:00 PM"
+);
+
+// Clear the screen
+printf("\033c");
+
+// Get the current date as 8 digits (YYYYMMDD)
+$now = date("Ymd");
+
+// If today's date in that format matches one of the array keys, we have our
+// answer - there's a Sabre's game today! :-)
+foreach($schedule as $date => $details) {
+	if ($date != $now) continue;
+	printf("The next sabres game is:\n");
+	printf("\t\033[33m%s\n\n\033[34mLET'S GO BUFFALO!\033[0m\n", $details);
+	exit();
+}
+
+// If it gets here, try and figure out when the next game is.
+printf("Bummer, no Sabres game tonight.  Next game:\n");
+$now_as_int = intval($now);
+foreach($schedule as $date => $details) {
+	
+	// If it's in the past, skip it
+	if (intval($date) < $now_as_int) continue;
+	
+	if (intval($date) == $now_as_int + 1) {
+		// Awesome!  There's a game tomorrow!
+		printf("\t\033[34mTomorrow: ");
+	} else {
+		// It's not tomorrow, so just tell me when
+		$year = substr($date, 0, 4);
+		$month = substr($date, 4, 2);
+		$day = substr($date, 6, 2);
+		$when = date_create("$month/$day/$year");
+		printf("\t\033[34m%s\n", date_format($when, "l, m/d/Y"));
+	}
+	printf("\033[33m\t%s\033[0m\n", $details);
+	exit();
+}
+
+// And if it gets here, Lord willing it's because we're in the playoffs! :-)
+printf("\033[31mUnknown.  Better update the schedule! :-)\033[0m\n");
+
+// End of script

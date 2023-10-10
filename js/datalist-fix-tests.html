@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>Datalist Fix</title>
+	<meta charset="utf-8"/>
+</head>
+<body>
+	<header><h1>Datalist fix</h1></header>
+	<main>
+		<details>
+			<summary>The problem</summary>
+			<p>
+				The short version is, browsers want to display both the value
+				<em>AND</em> the inner text.  This is a minor annoyance, and IMO
+				barely worth bothering about.  But I needed this feature for
+				work, so here we are.
+			</p>
+			<h2>Demo</h2>
+			<label>
+				<div>Favorite modern operating system</div>
+				<input type="text" list="bad">
+			</label>
+			<datalist id="bad">
+				<option value="Really?">Windows 10</option>
+				<option value="Guess you like fruit">macOS X</option>
+				<option value="Obviously. :)">Linux</option>
+				<option value="Ooooh, cool!">Haiku</option>
+				<option value="I like BSDs too">FreeBSD/OpenBSD</option>
+				<option value="FrankenLinux!">Android</option>
+				<option value="Again, really?">iOS</option>
+				<option value="What else is there?">Other</option>
+			</datalist>
+			<label>
+				<div>Favorite retro operating system</div>
+				<input type="text" list="bad2">
+			</label>
+			<datalist id="bad2">
+				<option value="My personal fave">The Commodore VIC-20</option>
+				<option value="Are you keeping up?">The Commodore 64 ("C64")</option>
+				<option value="Now there's an apple I can sink my teeth into!">The Apple ][</option>
+				<option value="DOSsome!">DOS (MS-DOS, FreeDOS, DOSBox etc.)</option>
+				<option value="A cool choice">The Atari 800</option>
+				<option value="So, SO many more">Other</option>
+			</datalist>
+		</details>
+		<details>
+			<summary>My solution</summary>
+			<p>
+				I can't really take credit for this; a co-worker found it on a
+				Stack Overflow post.  So the idea is not original, but the fix
+				is all my code (not even loosely based on the SO post). :)
+			</p>
+			<p>So in my version, the steps to follow are:</p>
+			<ol>
+				<li>Create an <code>&lt;input&gt;</code> element with a datalist</li>
+				<li>Create a second <code>&lt;input></code> element with <code>type="hidden"</code></li>
+				<li>Call <code>datalistFix</code>, passing in the two <code>&lt;input></code> element</li>
+			</ol>
+			<p>
+				And bingo!  The hidden <code>&lt;input></code> element can be
+				referenced by JavaScript, or you could add a <code>name</code>
+				and send it to server-side code, etc.  The end result is:
+			</p>
+			<ul>
+				<li>Users see user-friendly, human-readable names</li>
+				<li>Our code sees values our code needs to get stuff done.</li>
+			</ul>
+			<p>Problem solved. :)</p>
+			<h2>Demo</h2>
+			<label>
+				<div>Favorite modern operating system</div>
+				<input type="text" list="modernList" id="modernDisplay">
+			</label>
+			<datalist id="modernList">
+				<option data-value="Really?">Windows 10</option>
+				<option data-value="Guess you like fruit">macOS X</option>
+				<option data-value="Obviously. :)">Linux</option>
+				<option data-value="Ooooh, cool!">Haiku</option>
+				<option data-value="I like BSDs too">FreeBSD/OpenBSD</option>
+				<option data-value="FrankenLinux!">Android</option>
+				<option data-value="Again, really?">iOS</option>
+				<option data-value="What else is there?">Other</option>
+			</datalist>
+			<div id="modernResponse"></div>
+			<label>
+				<div>Favorite retro operating system</div>
+				<input type="text" list="retroList" id="retroDisplay">
+			</label>
+			<datalist id="retroList">
+				<option data-value="My personal fave">The Commodore VIC-20</option>
+				<option data-value="Are you keeping up?">The Commodore 64 ("C64")</option>
+				<option data-value="Now there's an apple I can sink my teeth into!">The Apple ][</option>
+				<option data-value="DOSsome!">DOS (MS-DOS, FreeDOS, DOSBox etc.)</option>
+				<option data-value="A cool choice">The Atari 800</option>
+				<option data-value="So, SO many more">Other</option>
+			</datalist>
+			<div id="retroResponse"></div>
+		</details>
+		<input type="hidden" id="modern"/>
+		<input type="hidden" id="retro"/>
+	</main>
+	<style>
+	/* Obviously, I understand CSS's syntax, but I'm no designer. :D */
+	body{text-align:center;}
+	details{margin:auto;margin-bottom:10px;text-align:left;width:75%;}
+	summary{width:100%;border:none;border-radius:16px;background:navy;color:yellow;padding:8px 16px;}
+	label div{margin-top:16px;margin-bottom:8px;}
+	th:first-of-type{width:200px;}
+	th:nth-of-type(2){width:320px;}
+	td button{margin:8px;padding:8px 16px}
+	</style>
+	<script src="datalistFix.js"></script>
+	<script>
+		// Apply the fix; one thing worth noting, and IMo a thing a lot of
+		// web developers don't know and need to know, is that when you put
+		// an ID on an element, that gets added to the global namespace.  So
+		// document.getElementById, document.querySelector("#someID") etc.
+		// are totally unnecessary.  Just thought you should know, since the
+		// code below seems to pull variables out of nowhere. :)
+		datalistFix(retroDisplay, retro);
+		datalistFix(modernDisplay, modern);
+		
+		// With the fix in place, I'm going to add a second event listener
+		// that shows the selected VALUES (stored in the hidden input tags).
+		// It's important to note that you should use addEventListener, not
+		// i.e. retroDisplay.onchange = your function (that would undo the
+		// fix; the fix uses addEventListener).  But of course you can just
+		// re-apply the fix again if you wanted to, but that's not cool.  8)
+		retroDisplay.addEventListener("change", function() {
+			retroResponse.innerText = retro.value;
+		});
+		modernDisplay.addEventListener("change", function() {
+			modernResponse.innerText = modern.value;
+		});
+	</script>
+</body>
+</html>

@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>CronJS - scheduled tasks, and reminders, for web apps</title>
+	<meta charset="utf-8"/>
+</head>
+<body>
+<main>
+	<h1>Scheduled Tasks</h1>
+	<details>
+		<summary>Getting Started</summary>
+		<h2>Background</h2>
+		<p>
+			This micro-library arose from a high-priority work project where I
+			had to run some code at a specific time, with reminders; obviously
+			since I was on a tight schedule (cheesy pun intended), I figured,
+			what the puck.  I'm not at work, I love open-source, so why not make
+			this an open-source thing with a crazy-permissive license and then
+			use it at work?  That vs. stressing out over it the next day and the
+			code would be theirs (as in closed-source).  FOSS FTW! :);
+		</p>
+		<h2>Conventions</h2>
+		<p>
+			The biggest thing I wanted to make sure I got down here is how I'm
+			naming these functions - conventions like this rarely make it into
+			in-code documentation, and here it's radically different from how I
+			usually prefer to do things.  ormally, I prefer C-style namespacing
+			(like SDL_*, sqlite3_*, etc.) in my function names.  But I wasn't
+			sure what the heck to call this one.  So instead of namespacing, I
+			used "PascalCase" (first letter capitalized), instead of the much
+			more common JS convention of "camelCase".  This makes naming
+			conflicts unlikely, and that's what namespacing is for, so we're ok.
+			It does potentially conflict with <em>class</em> naming, but I mean
+			come on, who's going to name their classes after instructions? :D
+		</p>
+		<h2>Beyond that...</h2>
+		<p>
+			The best way to learn how this micro-lib works is to view the source
+			code of this page and the JS files it links to.  I've added comments
+			all over the place, parameters and return values and why I did stuff
+			the way I did.  No need to re-hash it all here in a full-on manual.
+			That, my friend, is the beauty of micro-libraries: one programmer
+			can look at the comments - look at the <em>code</em> if necessary - 
+			and understand the whole enchilada.
+		</p>
+	</details>
+	<details>
+		<summary>Demo</summary>
+		<form onsubmit="newTask(event);">
+			<h2>Create a new task</h2>
+			<label>
+				<div>What:</div>
+				<input type="text" id="what" required />
+			</label>
+			<label>
+				<div>When:</div>
+				<input type="datetime-local" id="when" required />
+			</label>
+			<label>
+				<div>Code to run:</div>
+				<select id="callback" required>
+					<option value="0">Show an alert()</option>
+					<option value="1">Play a sound</option>
+					<option value="2">Turn the page background blue</option>
+					<option value="3">Delete the form</option>
+				</select>
+			</label>
+			<input type="submit" value="Create" />
+		</form>
+		<h2>Currently scheduled tasks</h2>
+		<table>
+			<thead><tr><th>When</th><th>What</th><th>Actions</th></tr></thead>
+			<tbody id="tasks"><td colspan="3">No tasks scheduled yet.</td></tbody>
+		</table>
+	</details>
+</main>
+<style>
+/* Obviously, I understand CSS's syntax, but I'm no designer. :D */
+body{text-align:center;}
+details{margin:auto;margin-bottom:10px;text-align:left;width:75%;}
+summary{width:100%;border:none;border-radius:16px;background:navy;color:yellow;padding:8px 16px;}
+label div{margin-top:16px;margin-bottom:8px;}
+th:first-of-type{width:200px;}
+th:nth-of-type(2){width:320px;}
+td button{margin:8px;padding:8px 16px}
+</style>
+<script src="Format.js"></script>
+<script src="ScheduledTasks.js"></script>
+<script>
+
+window.onload = function() {	
+	// Apps should call this before scheduled tasks can be used.
+	// This should only be called once, so window.onload is a good place for it.
+	StartScheduledTaskLoop();
+};
+
+/**
+ * Called when the user submits the form at the top (to add a new task)
+ * @param {Event} e An onsubmit event object
+ */
+function newTask(e) {
+	// Don't reload the page
+	e.preventDefault();
+	
+	// This array of functions is totally unrelated to the library;
+	// It's just which action you picked from the dropdown menu.
+	// Normally you would just pass a function here.  This array is just the
+	// easiest way I can think of to make a working demo. :)
+	var demo = [function(what) {
+		alert("Your scheduled task, \"" + what + "\", is now.");
+	}, function(what) {
+		alert('TO-DO: Play a sound');
+	}, function(what) {
+		document.body.style.backgroundColor = "blue";
+	}, function(what) {
+		document.querySelector('form').remove();
+	}];
+	
+	// Schedule the task, add a reminder, and update the UI
+	var task = AddScheduledTask(when.value, what.value, demo[callback.value]);
+	AddScheduledTaskReminder(task, 2, function(what) {
+		alert(what + " will start in 2 minutes.");
+	});
+	updateTable();
+}
+
+/**
+ * Sets up the table at the bottom to reflect the current schedule
+ */
+function updateTable() {
+	// If there are no tasks on the schedule, say so
+	if (!ScheduledTasks.length) {
+		tasks.innerHTML = '<td colspan="3">No tasks scheduled yet.</td>';
+		return;
+	}
+	
+	// Otherwise, build a table showing the list
+	tasks.innerHTML = "";
+	for (var i=0; i<ScheduledTasks.length; i++) {
+		
+		// Create the DOM elements we'll need
+		var tr = document.createElement('tr'),
+			td1 = document.createElement('td'),
+			td2 = document.createElement('td'),
+			td3 = document.createElement('td'),
+			edit = document.createElement('button'),
+			cancel = document.createElement('button'),
+			when = new Date(ScheduledTasks[i].when);
+			
+		// Put data in the first 2 cells
+		td1.innerText = when.toLocaleDateString()
+			+ " " + when.toLocaleTimeString();
+		td2.innerText = ScheduledTasks[i].what;
+		
+		// Set up the edit button
+		edit.innerText = "Edit";
+		edit.setAttribute("aria-label", "Edit " + ScheduledTasks[i].what);
+		edit.setAttribute("data-which-task", i);
+		edit.onclick = onEditTask;
+		
+		// Set up the cancel button
+		cancel.innerText = "Cancel";
+		cancel.setAttribute("aria-label", "Cancel " + ScheduledTasks[i].what);
+		cancel.setAttribute("data-which-task", i);
+		cancel.onclick = function(e) {
+			ScheduledTasks.splice(e.target.getAttribute("data-which-task"), 1);
+			updateTable();
+		};
+		
+		// And put it all together
+		tr.appendChild(td1);
+		tr.appendChild(td2);
+		td3.appendChild(edit);
+		td3.appendChild(cancel);
+		tr.appendChild(td3);
+		tasks.appendChild(tr);
+	}
+}
+
+/**
+ * Called when the user clicks one of the "edit" buttons in the table
+ * @param {Event} e An onclick event object
+ */
+function onEditTask(e) {
+	// Create a dialog, with a clone of the form in it
+	var dlg = document.createElement('dialog'),
+		frm = document.querySelector('form').cloneNode(true);
+	
+	// Rework the IDs, values, and form onsubmit event
+	frm.querySelector("#when").id = "when2";
+	frm.querySelector("#what").id = "what2";
+	frm.querySelector("[type=\"submit\"]").value = "Save";
+	frm.querySelector("#callback").parentElement.remove();
+	var i = e.target.getAttribute("data-which-task");
+	frm.onsubmit = function(e2) {
+		e2.preventDefault();
+		EditScheduledTask(ScheduledTasks[i], when2.value, what2.value);
+		updateTable();
+		dlg.remove();
+	};
+	dlg.appendChild(frm);
+	document.body.appendChild(dlg);
+	dlg.showModal();
+	what2.value = ScheduledTasks[i].what;
+	when2.value = FormatDateTimeLocal(new Date(ScheduledTasks[i].when));
+	what2.removeAttribute('required');
+	when2.removeAttribute('required');
+}
+
+</script>
+</body>
+</html>
